@@ -328,6 +328,13 @@ def by_n(n):
     raise KeyError(n)
 
 
+GEO = {}
+
+
+def geo_of(n):
+    return GEO.get(n)
+
+
 def colour(st):
     return REGION.get(st[1], REGION["world"])[0]
 
@@ -694,8 +701,104 @@ TIMELINE = [
 CERTAINTY = {3: "CLAIM", 35: "FORECAST"}
 
 
+def load_geo(src=None):
+    """Read each story's place from the edition, so a pin cannot be invented."""
+    import json
+    path = src or str(Path.home() / ".makefun" / "n22-news.json")
+    try:
+        ed = json.loads(Path(path).read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    out = {}
+    for s in ed.get("stories", []):
+        g = s.get("geo") or {}
+        if g.get("lat") is None or g.get("lon") is None:
+            continue
+        out[s["n"]] = (float(g["lat"]), float(g["lon"]))
+    return out
+
+
+# ------------------------------------------------------------------ the map
+# The world outline is real geometry: Natural Earth's 1:110m land polygons
+# (public domain, nvkelso/natural-earth-vector), read from tools/data. A map
+# drawn from remembered coordinates looked like a map and was not one -- whole
+# regions fell into the sea -- so the page uses the actual outline instead.
+LAND_PATH = Path(__file__).resolve().parent / "data" / "ne_110m_land.geojson"
+_LAND = []
+
+# Web Mercator, clipped to the latitudes a one-page map needs: the projection
+# keeps shapes a reader recognises, which plate carree does not.
+LAT_TOP, LAT_BOTTOM = 84.0, -58.0
+
+
+def _merc(lat):
+    import math
+    lat = max(min(lat, 84.0), -84.0)
+    return math.log(math.tan(math.pi / 4.0 + math.radians(lat) / 2.0))
+
+
+_M_TOP, _M_BOTTOM = _merc(LAT_TOP), _merc(LAT_BOTTOM)
+
+
+def project(lon, lat, box):
+    """Longitude and latitude to a point in box, Web Mercator."""
+    x0, y0, x1, y1 = box
+    w, h = x1 - x0, y1 - y0
+    x = x0 + (lon + 180.0) / 360.0 * w
+    y = y0 + (_M_TOP - _merc(lat)) / (_M_TOP - _M_BOTTOM) * h
+    return (x, y)
+
+
+def load_land():
+    """Read the land polygons once, as rings of (lon, lat)."""
+    import json
+    if _LAND:
+        return _LAND
+    try:
+        gj = json.loads(LAND_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return _LAND
+    for f in gj.get("features", []):
+        g = f.get("geometry") or {}
+        polys = g.get("coordinates") or []
+        if g.get("type") == "Polygon":
+            polys = [polys]
+        for poly in polys:
+            if not poly:
+                continue
+            # the outer ring is all this page needs; a hole at 1:110m is a lake
+            _LAND.append(poly[0])
+    return _LAND
+
+
+def draw_map(d, box, pins):
+    """The world, with one dot per story that carries a place."""
+    x0, y0, x1, y1 = box
+    d.rectangle([x0, y0, x1, y1], fill=(247, 245, 241))
+    rings = load_land()
+    for ring in rings:
+        pts = []
+        for lon, lat in ring:
+            px, py = project(lon, lat, box)
+            # clip at the frame rather than pushing points outside it
+            pts.append((min(max(px, x0), x1), min(max(py, y0), y1)))
+        if len(pts) > 2:
+            d.polygon(pts, fill=(225, 221, 212))
+    # the equator, faint: it is what makes the shape read as a world
+    ey = project(0, 0, box)[1]
+    d.line([x0 + 1, ey, x1 - 1, ey], fill=(214, 208, 198), width=1)
+    for n, lat, lon, col in pins:
+        px, py = project(lon, lat, box)
+        if not (x0 + 3 < px < x1 - 3 and y0 + 3 < py < y1 - 3):
+            continue
+        d.ellipse([px - 3.5, py - 3.5, px + 3.5, py + 3.5], fill=col)
+        d.ellipse([px - 3.5, py - 3.5, px + 3.5, py + 3.5], outline=WHITE, width=1)
+
+
 def main(out_path):
     CAPS_DRAWN.clear()
+    if not GEO:
+        GEO.update(load_geo())
     img = Image.new("RGB", (W, H), PAPER)
     d = ImageDraw.Draw(img)
     red = REGION["middle-east"][0]
@@ -744,9 +847,9 @@ def main(out_path):
             d.text((cx0, y + 41 + k * 10), ln, font=font("arial.ttf", 9), fill=SOFT)
         if i:
             d.line([cx0 - 7, y + 6, cx0 - 7, y + 62], fill=(224, 218, 208), width=1)
-    y += 64
+    y += 60
     d.line([M, y, RIGHT, y], fill=RULE, width=2)
-    y += 7
+    y += 5
 
     # ---- the region key: the page's inventory, in its own colours
     bw = EDGE / len(REGION)
@@ -762,7 +865,7 @@ def main(out_path):
         lab_w = caps_width(d, label, f_l, 0.35)
         caps(d, (seg + max(0, (seg_w - lab_w) // 2), y + 12), label, f_l,
              REGION[r][0], track=0.35)
-    y += 25
+    y += 22
 
     # ---- the three leads: picture, kicker, headline, what happened
     y += 5
@@ -798,9 +901,9 @@ def main(out_path):
             ty += 11
         if n in CERTAINTY:
             caps(d, (x, ty + 2), CERTAINTY[n], font("arialbd.ttf", 8), FAINT)
-    y = lead_top + lh + 8
+    y = lead_top + lh + 5
     d.line([M, y, RIGHT, y], fill=RULE, width=1)
-    y += 6
+    y += 4
 
     # ---- twelve briefs: a numbered tile, a label, one headline
     caps(d, (M, y), "AND TWELVE MORE, DATED THE SAME DAY", font("arialbd.ttf", 9), INK)
@@ -834,9 +937,9 @@ def main(out_path):
         for k, ln in enumerate(lines):
             d.text((tx, cy + k * line_h), ln, font=f_bh, fill=INK)
         caps(d, (tx, cy + 2 * line_h + 1), region_label(st), f_bt, col, track=0.3)
-    y += rows * row_h + 4
+    y += rows * row_h + 2
     d.line([M, y, RIGHT, y], fill=RULE, width=1)
-    y += 7
+    y += 5
 
     # ---- when it broke, on the day's own clock
     caps(d, (M, y), "WHEN IT BROKE, UTC", font("arialbd.ttf", 9), INK)
@@ -859,9 +962,26 @@ def main(out_path):
         for k, ln in enumerate(lines):
             wl = tw(d, ln, f_micro)
             d.text((px - wl // 2, axis_y + 7 + k * 10), ln, font=f_micro, fill=SOFT)
-    y = axis_y + 7 + 20
+    y = axis_y + 6 + 18
     d.line([M, y, RIGHT, y], fill=RULE, width=1)
-    y += 7
+    y += 5
+
+    # ---- where it happened: every story that carries a place, on one map
+    pins = []
+    for st in STORIES:
+        g = geo_of(st[0])
+        if g:
+            pins.append((st[0], g[0], g[1], colour(st)))
+    caps(d, (M, y), "WHERE THE DAY HAPPENED", font("arialbd.ttf", 9), INK)
+    caps(d, (RIGHT - caps_width(d, "%d OF 35 STORIES CARRY A PLACE" % len(pins),
+                                 font("arialbd.ttf", 8), 0.3), y + 1),
+         "%d OF 35 STORIES CARRY A PLACE" % len(pins), font("arialbd.ttf", 8), FAINT, track=0.3)
+    y += 13
+    map_h = 94
+    draw_map(d, (M, y, RIGHT, y + map_h), pins)
+    y += map_h + 4
+    d.line([M, y, RIGHT, y], fill=RULE, width=1)
+    y += 5
 
     # ---- the rest of the day, two columns
     caps(d, (M, y), "ALSO ON THE DAY", font("arialbd.ttf", 9), INK)
@@ -869,25 +989,33 @@ def main(out_path):
     caps(d, (RIGHT - caps_width(d, note, f_src), y + 1), note, f_src, FAINT)
     y += 15
     rest = [st for st in STORIES if st[0] in REST]
-    colw = (EDGE - 16) // 2
-    percol = (len(rest) + 1) // 2
+    # three columns, not two: the page has a map above the rail now, and the
+    # rail's job is to hold what is left without pushing the footer off
+    ncol = 3
+    colw = (EDGE - 2 * 12) // ncol
+    percol = (len(rest) + ncol - 1) // ncol
     f_rb = font("arialbd.ttf", 9.5)
     f_rr = font("arial.ttf", 9.5)
     for i, st in enumerate(rest):
-        cx = M + (i // percol) * (colw + 16)
+        cx = M + (i // percol) * (colw + 12)
         yy = y + (i % percol) * 12
         d.rectangle([cx, yy + 2, cx + 2, yy + 7], fill=colour(st))
+
+        # the rail carries the headline only: at three columns there is no room
+        # for a per-line credit that would still be legible, and the page names
+        # its wires once, in the rail's own header
+        room = cx + colw - 4
         x = cx + 6
         head = st[2]
         if ": " in head:
             actor, tail = head.split(": ", 1)
             d.text((x, yy), actor + ":", font=f_rb, fill=INK)
             x += tw(d, actor + ":", f_rb) + tw(d, " ", f_rr)
-            tail = clip_to(d, tail, f_rr, cx + colw - x)
+            tail = clip_to(d, tail, f_rr, room - x)
             if tail:
                 d.text((x, yy), tail, font=f_rr, fill=INK)
         else:
-            d.text((x, yy), clip_to(d, head, f_rr, cx + colw - x), font=f_rr, fill=INK)
+            d.text((x, yy), clip_to(d, head, f_rr, room - x), font=f_rr, fill=INK)
     y += percol * 12 + 5
 
     # ---- how to read it: the page states what it is sure of

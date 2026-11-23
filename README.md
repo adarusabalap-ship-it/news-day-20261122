@@ -24,3 +24,12 @@ mkdir -p out && MAKEFUN_OUTPUT_DIR=out python3 main.py
 ```
 
 `main.py` reads `entry.png`, refuses it unless it is a whole PNG or JPEG within 1 MiB and 1024 by 1024, and copies it to the output directory. It uses the Python standard library only and touches no network.
+
+## The map
+
+`tools/data/ne_110m_land.geojson` is Natural Earth's 1:110m land layer
+(public domain, nvkelso/natural-earth-vector), committed so the map renders
+offline and always the same. `tools/poster.py` projects it in Web Mercator and
+plots one dot per story whose edition record carries a place -- 30 of the 35.
+The outline is real geometry rather than remembered coordinates, and the page
+says how many stories it could place.
