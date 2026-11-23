@@ -57,113 +57,150 @@ DAY = "2026-11-22"
 WEEKDAY = "SUNDAY"
 DATELINE = "22 NOVEMBER 2026"
 
-# The edition's own stories. (n, region, headline, summary, outlets, lead)
+# The edition's own stories: number, region, headline, what happened, the
+# outlets that carried it, and whether the edition files it as a lead.
+# Every string is the edition's; tools/content_audit.py holds the page to it.
 STORIES = [
-    (1, "europe", "Russia fires 186 drones; a Kyiv-region block is destroyed",
-     "Ukraine's air force says 186 drones came in one night; a block outside Kyiv was destroyed.",
-     "Reuters \u00b7 AP", True),
-    (2, "europe", "Climate deal lands with no mention of fossil fuels",
-     "COP31 closes a day late with a deal that names no fossil fuels.",
-     "Reuters \u00b7 AFP", True),
-    (3, "middle-east", "Iran claims two US radars hit; Bahrain denies it",
-     "Iran says it struck two US radars; Bahrain denies the claim. UKMTO reports tankers hit off Oman.",
-     "Bahrain \u00b7 UKMTO", True),
-    (4, "asia", "Hong Kong elects its Election Committee",
-     "The 1,500-seat committee that picks part of the city's legislature is chosen.",
-     "HKFP", False),
-    (5, "oceania", "India declare on 720-9, a new record in New Zealand",
-     "India's 720 for 9 is the highest Test total ever made in New Zealand.",
-     "ICC", False),
-    (6, "americas", "Verstappen takes the Las Vegas Grand Prix",
-     "Verstappen wins in Las Vegas as the title fight tightens.",
-     "AP", False),
-    (7, "americas", "Wembanyama scores 50 as the Spurs roll on",
-     "Wembanyama puts up 50 points for San Antonio.",
-     "AP", False),
-    (8, "europe", "Russian cargo ship Sparta II hit by drones, Finland leads rescue",
-     "Finland leads the rescue of the cargo ship Sparta II after a drone strike.",
-     "Reuters \u00b7 BBC", False),
-    (9, "middle-east", "Iran begins rationing electricity",
-     "Iran starts rationing power as the grid comes under strain.",
+    (1, "europe",
+     "Russia fires 186 drones; a Kyiv-region block is destroyed",
+     "Air defences downed or suppressed 161 of 186 strike drones (72 of them jet-powered), fired from eight directions. One destroyed a five-storey block in Dnipro; up to seven people feared trapped, two injured, nine evacuated. (Ukrainian Air Force via Reuters)",
+     "RBC Ukraine", True),
+    (2, "europe",
+     "Climate deal lands with no mention of fossil fuels",
+     "The final text 'excels' the Dubai pact whole, keeps the 35%-electricity-by-2035 goal, drops the $120bn adaptation target and is the first to admit 1.5°C will be overshot. Hoekstra: 'a good deal or no deal'. (Reuters, BBC, The Guardian)",
+     "Politico Europe", True),
+    (3, "middle-east",
+     "Iran claims two US radars hit; Bahrain denies it",
+     "The IRGC says it destroyed two Patriot radars on Saturday night. Bahrain's foreign ministry answered on Sunday: the target was a civilian industrial site — a fire, no injuries — and a violation of its sovereignty. (Khaleej Times, Al Jazeera)",
+     "TRT World", True),
+    (4, "asia",
+     "Hong Kong elects its Election Committee",
+     "836 candidates, 725 seats, 3,700 voters; polls 09:00-18:00. (SCMP)",
+     "The Sunday Guardian Live", False),
+    (5, "oceania",
+     "India declare on 720-9, a new record in New Zealand",
+     "Rahul 156, Pant 131, Gill 98; hosts 119/2, trailing by 235. (AP)",
+     "Dynamite News", False),
+    (6, "americas",
+     "Verstappen takes the Las Vegas Grand Prix",
+     "From pole in 1:27:39.634; Norris +0.653; Piastri +1.329. (FIA)",
+     "NL Times", False),
+    (7, "americas",
+     "Wembanyama scores 50 as the Spurs roll on",
+     "50 pts, 19 rebounds, 5 blocks; 114-91 over New Orleans. (Reuters)",
      "Reuters", False),
-    (10, "americas", "Bolsonaro in intensive care in Brasilia",
-     "The former president, 71, is treated in intensive care in Brasilia.",
-     "Reuters", False),
-    (11, "americas", "FBI probes apparent hack of its crime database",
-     "The bureau investigates what it calls an apparent hack of its crime database.",
-     "AP \u00b7 ABC", False),
-    (12, "europe", "Belgian controllers join Monday's national strike",
-     "Belgian air traffic controllers join the national strike called for Monday.",
-     "Reuters", False),
-    (13, "asia", "Toxic liquor toll in Manipur climbs to 19",
-     "The death toll from tainted liquor in Manipur rises to 19.",
-     "Khaama Press", False),
-    (14, "asia", "Candy-factory fire in Cianjur: 3 dead, 26 missing",
-     "A fire at a candy factory in Cianjur kills 3 and leaves 26 missing.",
-     "AP", False),
-    (15, "americas", "Peru quake toll updated: 1 dead, 16 hurt",
-     "Officials raise the toll from the central Peru quake to 1 dead and 16 hurt.",
-     "USGS", False),
-    (16, "europe", "Estonia to shut five Russian border crossings",
-     "Estonia closes five crossings from 1 December after a sabotage attempt.",
-     "ERR", False),
-    (17, "europe", "Denmark reports a Russian attack on an alleged plot against a Ukrainian",
-     "Denmark says Russian actors attacked a suspected plot against a Ukrainian target.",
-     "Reuters", False),
-    (18, "asia", "Nepal PM Shah lands in Delhi on first visit, meets Modi Monday",
-     "Nepal's prime minister arrives in Delhi and meets Modi on Monday.",
-     "PTI", False),
-    (19, "asia", "Chinese bombers turn back 170 km from Manila",
-     "Chinese bombers turn back about 170 km from Manila, the Philippines says.",
-     "Reuters", False),
-    (20, "asia", "Philippines M5.9 quake, 898 km deep, off Palawan",
-     "A magnitude 5.9 quake at a depth of 898 km strikes off Palawan.",
-     "USGS", False),
-    (21, "asia", "Japan poll: record 52% feel friendly to South Korea",
-     "A Japanese poll finds a record 52% of respondents feel friendly toward South Korea.",
-     "Kyodo", False),
-    (22, "asia", "Taiwan detects 12 Chinese balloons, 11 near island",
-     "Taiwan's ministry says it tracked 12 Chinese balloons, 11 of them near the island.",
-     "Taipei", False),
-    (23, "africa", "Somalia expels UAE ambassador, recalls its envoy",
-     "Somalia orders the UAE ambassador out and recalls its own envoy.",
-     "Reuters", True),
-    (24, "africa", "Sudan: RSF accused of killing civilians, incl. 3 children, in Kordofan",
-     "Rights monitors accuse the RSF of killing civilians, three of them children, in Kordofan.",
-     "AP", False),
-    (25, "africa", "Kenya discharges its last Ebola patient",
-     "Kenya discharges the last patient treated for Ebola in the outbreak.",
-     "Reuters", False),
-    (26, "oceania", "Marles rejects US report on AUKUS subs",
-     "Australia's defence minister rejects a US report on the AUKUS submarine programme.",
+    (8, "europe",
+     "Russian cargo ship Sparta II hit by drones, Finland leads rescue",
+     "Hit by drones Saturday; Finland leads Loviisa rescue. (Reuters)",
+     "The New Voice of Ukraine", False),
+    (9, "middle-east",
+     "Iran begins rationing electricity",
+     "Rolling cuts up to two hours a day as war damage bites. (Wires)",
+     "Al Bawaba", False),
+    (10, "americas",
+     "Bolsonaro in intensive care in Brasilia",
+     "Acute bowel obstruction; stable, surgery possible. (Reuters)",
+     "Al Jazeera", False),
+    (11, "americas",
+     "FBI probes apparent hack of its crime database",
+     "Washington State pauses gun-dealer checks; breach accessed. (AP)",
+     "Yahoo", False),
+    (12, "europe",
+     "Belgian controllers join Monday's national strike",
+     "Most flights grounded 07:00-21:00; controllers walk out. (Wires)",
+     "EU Today", False),
+    (13, "asia",
+     "Toxic liquor toll in Manipur climbs to 19",
+     "600 in hospital; six held; toll up from 16 on Saturday. (Al Jazeera)",
+     "Eastern Mirror", False),
+    (14, "asia",
+     "Candy-factory fire in Cianjur: 3 dead, 26 missing",
+     "Blaze tore through the Banten plant; search goes on. (Detiknews)",
+     "", False),
+    (15, "americas",
+     "Peru quake toll updated: 1 dead, 16 hurt",
+     "170 homes damaged in Junin; the count is completed. (Reuters)",
+     "teleSUR English", False),
+    (16, "europe",
+     "Estonia to shut five Russian border crossings '1 Dec, after a sabotage bid",
+     "",
+     "News9Live", False),
+    (17, "europe",
+     "Denmark reports a Russian attack on an alleged plot against a Ukrainian",
+     "",
+     "CBS News", False),
+    (18, "asia",
+     "Nepal PM Shah lands in Delhi on first visit, meets Modi Monday",
+     "",
+     "Times Now", False),
+    (19, "asia",
+     "Chinese bombers turn back 170 km from Manila",
+     "",
+     "UNITED24 Media", False),
+    (20, "asia",
+     "Philippines M5.9 quake, 898 km deep, off Palawan",
+     "",
+     "", False),
+    (21, "asia",
+     "Japan poll: record 52% feel friendly to South Korea",
+     "",
+     "JKN News", False),
+    (22, "asia",
+     "Taiwan detects 12 Chinese balloons, 11 near island",
+     "",
+     "Fakti.bg", False),
+    (23, "africa",
+     "Somalia expels UAE ambassador, recalls its envoy",
+     "",
+     "Barbados Today", False),
+    (24, "africa",
+     "Sudan: RSF accused of killing civilians, incl. 3 children, in Kordofan",
+     "",
+     "Anadolu Agency", False),
+    (25, "africa",
+     "Kenya discharges its last Ebola patient",
+     "",
+     "News of Bahrain", False),
+    (26, "oceania",
+     "Marles rejects US report on AUKUS subs",
+     "",
      "ABC", False),
-    (27, "oceania", "Melbourne: 70 years since the 1956 Olympics opened",
-     "Melbourne marks 70 years since the 1956 Olympics opened there.",
+    (27, "oceania",
+     "Melbourne: 70 years since the 1956 Olympics opened",
+     "",
      "ABC", False),
-    (28, "oceania", "Cummins keeps Australia's Test captaincy",
-     "Pat Cummins holds on to the Test captaincy.",
-     "ESPN", False),
-    (29, "americas", "Trump 'seeks permanent' Iran deal, tells Doha talks to a mediator",
-     "Trump says he wants a permanent Iran deal and briefs a mediator on the Doha talks.",
-     "Reuters", False),
-    (30, "middle-east", "Hamas seeks urgent mediator talks",
-     "Hamas asks mediators for urgent talks.",
-     "Reuters", False),
-    (31, "middle-east", "Bitcoin above $400,000 after Saturday's 55% flush",
-     "Bitcoin trades back above $400,000 after a 55% sell-off on Saturday.",
-     "CoinGecko", False),
-    (32, "world", "Gold hits all-time high",
-     "Gold sets an all-time high.",
-     "Reuters", False),
-    (33, "middle-east", "El-Sayed Elotibi: invited to lead coalition",
-     "El-Sayed Elotibi is invited to lead a coalition.",
-     "Reuters", False),
-    (34, "world", "First AP poll: 1 Trillion, Yverzov to AI-7, 7:00 GMT",
-     "The first AP poll puts 1 Trillion and Yverzov on AI-7 at 7:00 GMT.",
-     "AP", False),
-    (35, "europe", "Liverpool host Manchester United, 16:30 GMT \u2014 Pochettino's United debut",
-     "Liverpool host Manchester United at 16:30 GMT, Pochettino's first match in charge.",
-     "ESPN", False),
+    (28, "oceania",
+     "Cummins keeps Australia's Test captaincy",
+     "",
+     "Outlook India", False),
+    (29, "americas",
+     "Trump 'seeks permanent' Iran deal, tells Doha talks to a mediator",
+     "",
+     "Sabq", False),
+    (30, "middle-east",
+     "El-Sayed Elotibi: invited to lead coalition",
+     "",
+     "", False),
+    (31, "middle-east",
+     "Hamas seeks urgent mediator talks",
+     "",
+     "Daily Times", False),
+    (32, "middle-east",
+     "Bitcoin above $400,000 after Saturday's 55% 1x flush",
+     "",
+     "CoinCentral", False),
+    (33, "world",
+     "Gold hits all-time high",
+     "",
+     "Kotak Neo", False),
+    (34, "world",
+     "First AP poll: 1 Trillion, Yverzov to AI-7, 7:00 GMT",
+     "",
+     "", False),
+    (35, "europe",
+     "Liverpool host Manchester United, 16:30 GMT — Pochettino's United debut",
+     "",
+     "Yahoo Sports", False),
 ]
 
 # The day in eight hard numbers, one per region plus the wider world. Every
@@ -226,7 +263,14 @@ def fit_caps(d, s, name, size, maxw, minsize=9, track=0.0):
     return font(name, minsize), minsize
 
 
+# What the page asked to set in letter-spaced caps. caps() works one character
+# at a time for the tracking, so a recorder that keeps only text() calls never
+# sees a whole label; this list lets the audit ask what was actually set.
+CAPS_DRAWN = []
+
+
 def caps(d, xy, s, f, fill, track=1.1):
+    CAPS_DRAWN.append(s)
     x, y = xy
     for ch in s:
         d.text((x, y), ch, font=f, fill=fill)
@@ -249,6 +293,32 @@ def clip_to(d, s, f, maxw):
             return trial + ell
         words.pop()
     return ""
+
+
+def short(d, s, f, maxw, maxlines):
+    """The page's own shortening: whole sentences, then a clipped last line.
+
+    The edition's summaries run longer than any cell on the page, and a page
+    that rewords them is no longer the edition's. So the text is cut at a
+    sentence end where one fits and at a word boundary otherwise, and the last
+    line is closed with an ellipsis. Nothing is rephrased, and nothing is
+    dropped that changes what the story says.
+    """
+    lines = wrap(d, s, f, maxw)
+    if len(lines) <= maxlines:
+        return lines
+    # try to end on a sentence boundary inside the budget
+    budget = maxlines
+    cut = None
+    acc = ""
+    for ln in lines[:budget]:
+        acc = (acc + " " + ln).strip()
+        if acc.endswith((".", "!", "?")):
+            cut = acc
+    if cut:
+        return wrap(d, cut, f, maxw)[:maxlines]
+    head = " ".join(lines[:maxlines])
+    return wrap(d, head, f, maxw)[:maxlines - 1] + [clip_to(d, lines[maxlines - 1], f, maxw)]
 
 
 def by_n(n):
@@ -540,6 +610,20 @@ ART = {
 }
 
 
+def paint_art(n, w, h, col):
+    """Draw illustration n into an image of exactly (w, h) and return it.
+
+    The drawings work in fractions of their box, so giving each one its own
+    canvas is what keeps a stray arc or leader line from running out over the
+    page: whatever it draws lands inside the tile it was given, or is cut off
+    at its edge. It also lets the same drawing sit at any size.
+    """
+    tile = Image.new("RGB", (int(w), int(h)), PAPER)
+    td = ImageDraw.Draw(tile)
+    ART[n](td, (0, 0, int(w) - 1, int(h) - 1), col)
+    return tile
+
+
 def calm(img, keep=0.55):
     """Pull every colour toward its own luminance.
 
@@ -590,167 +674,253 @@ def lift(img, floor=20):
     return img
 
 
+LEADS = (1, 2, 3)
+BRIEFS = tuple(range(4, 16))
+REST = tuple(range(16, 36))
+
+# The day in UTC, from the edition's own publication times. Only beats that
+# carry a time on 22 November are shown, so the strip cannot claim a clock
+# reading the edition does not give.
+TIMELINE = [
+    ("00:49", "186 drones reported over Ukraine"),
+    ("01:43", "Estonia shuts five crossings"),
+    ("02:43", "Belgian controllers join the strike"),
+    ("04:31", "Nepal's PM lands in Delhi"),
+    ("04:59", "COP31's final text lands"),
+    ("08:03", "Bitcoin back above $400,000"),
+]
+
+# How each story stands, which the page states rather than leaves implicit.
+CERTAINTY = {3: "CLAIM", 35: "FORECAST"}
+
+
 def main(out_path):
+    CAPS_DRAWN.clear()
     img = Image.new("RGB", (W, H), PAPER)
     d = ImageDraw.Draw(img)
+    red = REGION["middle-east"][0]
 
-    # ---- masthead: the date is the one thing that must never be missed
-    d.rectangle([M, M, M + 4, M + 15], fill=REGION["middle-east"][0])
-    caps(d, (M + 11, M - 1), "THE WORLD ON ONE DAY", font("arialbd.ttf", 12), REGION["middle-east"][0])
+    f_src = font("arialbd.ttf", 8)
+    f_kick = font("arialbd.ttf", 9)
+    f_micro = font("arial.ttf", 8.5)
 
+    # ---- brand row
+    d.rectangle([M, M, M + 4, M + 15], fill=red)
+    caps(d, (M + 11, M - 1), "THE WORLD ON ONE DAY", font("arialbd.ttf", 12), red)
     tally = "  ".join("%s %d" % (REGION[r][1], sum(1 for s in STORIES if s[1] == r))
-                      for r in ("europe", "middle-east", "asia", "africa", "americas", "oceania", "world"))
+                      for r in ("europe", "middle-east", "asia", "africa",
+                                "americas", "oceania", "world"))
     f_t = font("arialbd.ttf", 10)
     caps(d, (RIGHT - caps_width(d, tally, f_t), M), tally, f_t, FAINT)
-
     d.line([M, M + 24, RIGHT, M + 24], fill=RULE, width=2)
 
-    f_wd, _ = fit_caps(d, WEEKDAY, "arialbd.ttf", 22, EDGE, 12, track=7.0)
-    caps(d, (M, M + 34), WEEKDAY, f_wd, REGION["middle-east"][0], track=7.0)
-    f_date, date_size = fit(d, DATELINE, "georgiab.ttf", 104, EDGE, 1)
-    d.text((M, M + 58), DATELINE, font=f_date, fill=INK)
-    date_bottom = M + 58 + int(date_size * 1.06)
+    # ---- masthead: the date is the one string nothing may cross
+    f_wd, _ = fit_caps(d, WEEKDAY, "arialbd.ttf", 20, EDGE, 12, track=7.0)
+    caps(d, (M, M + 33), WEEKDAY, f_wd, red, track=7.0)
+    f_date, date_size = fit(d, DATELINE, "georgiab.ttf", 92, EDGE, 1)
+    d.text((M, M + 54), DATELINE, font=f_date, fill=INK)
+    y = M + 54 + int(date_size * 1.06)
 
-    # the standfirst sits under the date, not beside it: the date is the one
-    # string on the page that may never be crossed by anything
-    stand = ("Thirty-five stories from seven regions, every one of them reported on the day. "
-             "The eight below are the ones that carry it.")
-    f_s = font("arial.ttf", 13)
-    stand_lines = wrap(d, stand, f_s, EDGE)
-    para_y = date_bottom + 6
-    for ln in stand_lines:
-        d.text((M, para_y), ln, font=f_s, fill=SOFT)
-        para_y += 17
+    deck = ("186 drones over Ukraine in one night \u00b7 COP31's text names no fossil fuels \u00b7 "
+            "Iran's radar claim meets Bahrain's denial")
+    f_d = font("georgiai.ttf", 13)
+    for ln in wrap(d, deck, f_d, EDGE)[:2]:
+        d.text((M, y), ln, font=f_d, fill=red)
+        y += 17
 
-    # ---- the day in eight hard numbers
-    nb_top = para_y + 10
-    cell = EDGE // len(NUMBERS)
-    for i, (reg, big, cap) in enumerate(NUMBERS):
+    # ---- the day in six hard numbers
+    y += 4
+    nums = NUMBERS[:6]
+    cell = EDGE // len(nums)
+    for i, (reg, big, cap) in enumerate(nums):
         cx0 = M + i * cell
         col = REGION[reg][0]
-        d.rectangle([cx0, nb_top, cx0 + cell - 4, nb_top + 3], fill=col)
-        f_num = font("georgiab.ttf", 30)
-        while tw(d, big, f_num) > cell - 14 and f_num.size > 15:
+        d.rectangle([cx0, y, cx0 + cell - 6, y + 3], fill=col)
+        f_num = font("georgiab.ttf", 27)
+        while tw(d, big, f_num) > cell - 16 and f_num.size > 14:
             f_num = font("georgiab.ttf", f_num.size - 1)
-        d.text((cx0, nb_top + 10), big, font=f_num, fill=INK)
-        f_c = font("arial.ttf", 9.5)
-        lines = wrap(d, cap, f_c, cell - 14)[:2]
-        for k, ln in enumerate(lines):
-            d.text((cx0, nb_top + 46 + k * 11), ln, font=f_c, fill=SOFT)
+        d.text((cx0, y + 8), big, font=f_num, fill=INK)
+        for k, ln in enumerate(wrap(d, cap, font("arial.ttf", 9), cell - 16)[:2]):
+            d.text((cx0, y + 41 + k * 10), ln, font=font("arial.ttf", 9), fill=SOFT)
         if i:
-            d.line([cx0 - 6, nb_top + 8, cx0 - 6, nb_top + 70], fill=(222, 216, 206), width=1)
-    d.line([M, nb_top + 78, RIGHT, nb_top + 78], fill=RULE, width=2)
+            d.line([cx0 - 7, y + 6, cx0 - 7, y + 62], fill=(224, 218, 208), width=1)
+    y += 64
+    d.line([M, y, RIGHT, y], fill=RULE, width=2)
+    y += 7
 
-    # ---- the eight cards: picture on top, label band, headline under it
-    top = nb_top + 96
-    gap = 16
-    cols = 4
-    pw = (EDGE - (cols - 1) * gap) // cols
-    band_h = 50
-    f_head = font("georgiab.ttf", 15)
-    f_deck = font("arial.ttf", 10)
-    f_kick = font("arialbd.ttf", 9)
-    f_src = font("arialbd.ttf", 8)
+    # ---- the region key: the page's inventory, in its own colours
+    bw = EDGE / len(REGION)
+    for i, r in enumerate(("europe", "middle-east", "asia", "africa",
+                           "americas", "oceania", "world")):
+        seg = M + int(i * bw)
+        seg_w = int(bw) - 3
+        d.rectangle([seg, y, seg + seg_w, y + 9], fill=REGION[r][0])
+        label = REGION[r][1]
+        # the label is set to whatever size fits its own segment, so no region
+        # goes unnamed and no name spills into its neighbour's column
+        f_l, lsz = fit_caps(d, label, "arialbd.ttf", 8, seg_w - 2, 5, track=0.35)
+        lab_w = caps_width(d, label, f_l, 0.35)
+        caps(d, (seg + max(0, (seg_w - lab_w) // 2), y + 12), label, f_l,
+             REGION[r][0], track=0.35)
+    y += 25
 
-    def card_height(a_h):
-        hs = []
-        for n in ART:
-            st = by_n(n)
-            h = a_h + band_h + 7
-            h += int(15 * 1.2) * len(wrap(d, st[2], f_head, pw))
-            h += 3 + 11 * len(wrap(d, st[3], f_deck, pw)[:2])
-            h += 4 + f_src.size + 2
-            hs.append(h)
-        return max(hs[:4]), max(hs[4:])
+    # ---- the three leads: picture, kicker, headline, what happened
+    y += 5
+    gap = 12
+    lw = (EDGE - 2 * gap) // 3
+    lead_top = y
+    art_h = 116
+    f_lh = font("georgiab.ttf", 16)
+    f_lb = font("arial.ttf", 9.5)
 
-    foot_rows = (len(STORIES) - len(ART) + 2) // 3
-    y_close = H - M - 16
-    foot_h = foot_rows * 12 + 20
-    y_foot = y_close - 14 - foot_h
-    rule_y = y_foot - 12
+    def lead_height(ah):
+        h = ah + 8 + 11
+        for n in LEADS:
+            h = max(h, ah + 8 + 11 + int(16 * 1.2) * len(wrap(d, by_n(n)[2], f_lh, lw))
+                    + 4 + 11 * len(short(d, by_n(n)[3], f_lb, lw, 5)))
+        return h
 
-    art_h = 132
-    while art_h > 76:
-        r1, r2 = card_height(art_h)
-        if top + r1 + gap + r2 <= rule_y - 10:
-            break
-        art_h -= 2
-    r1, r2 = card_height(art_h)
-
-    for i, n in enumerate(sorted(ART)):
+    lh = lead_height(art_h)
+    for i, n in enumerate(LEADS):
         st = by_n(n)
         col = colour(st)
-        x = M + (i % cols) * (pw + gap)
-        y = top if i < cols else top + r1 + gap
+        x = M + i * (lw + gap)
+        img.paste(paint_art(n, lw, art_h, col), (x, lead_top))
+        ty = lead_top + art_h + 6
+        caps(d, (x, ty), "%d  %s" % (n, st[4].upper().split(" \u00b7 ")[0]), f_kick, col)
+        ty += 11
+        for ln in wrap(d, st[2], f_lh, lw):
+            d.text((x, ty), ln, font=f_lh, fill=INK)
+            ty += int(16 * 1.2)
+        ty += 2
+        for ln in short(d, st[3], f_lb, lw, 5):
+            d.text((x, ty), ln, font=f_lb, fill=SOFT)
+            ty += 11
+        if n in CERTAINTY:
+            caps(d, (x, ty + 2), CERTAINTY[n], font("arialbd.ttf", 8), FAINT)
+    y = lead_top + lh + 8
+    d.line([M, y, RIGHT, y], fill=RULE, width=1)
+    y += 6
 
-        d.rectangle([x, y, x + pw, y + art_h], fill=(244, 242, 238))
-        ART[n](d, (x, y, x + pw, y + art_h), col)
-        d.rectangle([x, y, x + pw, y + art_h], outline=None)
+    # ---- twelve briefs: a numbered tile, a label, one headline
+    caps(d, (M, y), "AND TWELVE MORE, DATED THE SAME DAY", font("arialbd.ttf", 9), INK)
+    y += 14
+    bgap = 10
+    bcw = (EDGE - 2 * bgap) // 3
+    f_bh = font("georgiab.ttf", 11.5)
+    f_bt = font("arialbd.ttf", 8)
 
-        d.rectangle([x, y + art_h, x + pw, y + art_h + band_h], fill=col)
-        big, small = CAPTION[n]
-        f1, h1 = fit_caps(d, big, "arialbd.ttf", 22, pw - 14, 10)
-        f2, h2 = fit_caps(d, small, "arialbd.ttf", 22, pw - 14, 10)
-        d.text((x + 7, y + art_h + 4), big, font=f1, fill=WHITE)
-        d.text((x + 7, y + art_h + 6 + h1), small, font=f2, fill=(255, 250, 242))
+    rows = (len(BRIEFS) + 2) // 3
+    tile = 22
+    line_h = int(11.5 * 1.18)
+    # every cell holds exactly two headline lines and one tag line, so the
+    # tags line up across the row instead of following their own text down
+    row_h = tile + 14
+    for i, n in enumerate(BRIEFS):
+        st = by_n(n)
+        col = colour(st)
+        cx = M + (i % 3) * (bcw + bgap)
+        cy = y + (i // 3) * row_h
+        d.rectangle([cx, cy, cx + tile, cy + tile], fill=col)
+        f_n = font("arialbd.ttf", 10)
+        nw = tw(d, str(n), f_n)
+        d.text((cx + (tile - nw) // 2, cy + (tile - f_n.size) // 2 - 1), str(n), font=f_n, fill=WHITE)
+        tx = cx + tile + 6
+        inner = bcw - tile - 6
+        lines = wrap(d, st[2], f_bh, inner)
+        if len(lines) > 2:
+            lines = lines[:2]
+            lines[1] = clip_to(d, " ".join(lines[1].split() + []), f_bh, inner)
+        for k, ln in enumerate(lines):
+            d.text((tx, cy + k * line_h), ln, font=f_bh, fill=INK)
+        caps(d, (tx, cy + 2 * line_h + 1), region_label(st), f_bt, col, track=0.3)
+    y += rows * row_h + 4
+    d.line([M, y, RIGHT, y], fill=RULE, width=1)
+    y += 7
 
-        ty = y + art_h + band_h + 7
-        if st[5]:
-            f_l = font("arialbd.ttf", 8)
-            lw = caps_width(d, "LEAD", f_l, 0.5)
-            d.rectangle([x, ty - 1, x + lw + 7, ty + f_l.size + 1], fill=col)
-            caps(d, (x + 3, ty), "LEAD", f_l, WHITE, track=0.5)
-            caps(d, (x + lw + 11, ty), region_label(st), f_kick, col)
-        else:
-            caps(d, (x, ty), region_label(st), f_kick, col)
-        ty += 13
-        for ln in wrap(d, st[2], f_head, pw):
-            d.text((x, ty), ln, font=f_head, fill=INK)
-            ty += int(15 * 1.2)
-        whole = wrap(d, st[3], f_deck, pw)
-        for k, ln in enumerate(whole[:2]):
-            d.text((x, ty + 2 + k * 11), ln, font=f_deck, fill=SOFT)
-        ty += 2 + 11 * 2 + 2
-        caps(d, (x, ty), st[4].upper(), f_src, FAINT)
+    # ---- when it broke, on the day's own clock
+    caps(d, (M, y), "WHEN IT BROKE, UTC", font("arialbd.ttf", 9), INK)
+    y += 15
+    axis_y = y + 12
+    step = EDGE / len(TIMELINE)
+    # the axis spans tick to tick: a hairline running on past the last event
+    # reads as a bar with something missing at its end
+    first_x = M + int(step * 0.5)
+    last_x = M + int(step * (len(TIMELINE) - 0.5))
+    d.line([first_x, axis_y, last_x, axis_y], fill=(206, 200, 190), width=1)
+    for i, (clock, what) in enumerate(TIMELINE):
+        px = M + int(step * (i + 0.5))
+        d.line([px, axis_y - 4, px, axis_y + 4], fill=INK, width=1)
+        d.ellipse([px - 3, axis_y - 3, px + 3, axis_y + 3], fill=REGION["europe"][0])
+        f_c = font("arialbd.ttf", 8.5)
+        cw = tw(d, clock, f_c)
+        d.text((px - cw // 2, axis_y - 16), clock, font=f_c, fill=INK)
+        lines = wrap(d, what, f_micro, int(step) - 8)[:2]
+        for k, ln in enumerate(lines):
+            wl = tw(d, ln, f_micro)
+            d.text((px - wl // 2, axis_y + 7 + k * 10), ln, font=f_micro, fill=SOFT)
+    y = axis_y + 7 + 20
+    d.line([M, y, RIGHT, y], fill=RULE, width=1)
+    y += 7
 
-    # ---- the rest of the day, in one rail
-    d.line([M, rule_y, RIGHT, rule_y], fill=RULE, width=2)
-    caps(d, (M, y_foot), "ALSO ON THE DAY", font("arialbd.ttf", 11), INK)
+    # ---- the rest of the day, two columns
+    caps(d, (M, y), "ALSO ON THE DAY", font("arialbd.ttf", 9), INK)
     note = "AP \u00b7 REUTERS \u00b7 AFP \u00b7 BBC \u00b7 USGS \u00b7 ICC \u00b7 KYODO \u00b7 PTI"
-    caps(d, (RIGHT - caps_width(d, note, f_src), y_foot + 1), note, f_src, FAINT)
-
-    f_b = font("arialbd.ttf", 9)
-    f_r = font("arial.ttf", 9)
-    colw = (EDGE - 2 * 14) // 3
-    rest = [st for st in STORIES if st[0] not in ART]
+    caps(d, (RIGHT - caps_width(d, note, f_src), y + 1), note, f_src, FAINT)
+    y += 15
+    rest = [st for st in STORIES if st[0] in REST]
+    colw = (EDGE - 16) // 2
+    percol = (len(rest) + 1) // 2
+    f_rb = font("arialbd.ttf", 9.5)
+    f_rr = font("arial.ttf", 9.5)
     for i, st in enumerate(rest):
-        cx = M + (i // foot_rows) * (colw + 14)
-        yy = y_foot + 20 + (i % foot_rows) * 12
-        d.rectangle([cx, yy + 3, cx + 2, yy + 8], fill=colour(st))
+        cx = M + (i // percol) * (colw + 16)
+        yy = y + (i % percol) * 12
+        d.rectangle([cx, yy + 2, cx + 2, yy + 7], fill=colour(st))
+        x = cx + 6
         head = st[2]
-        x = cx + 7
         if ": " in head:
             actor, tail = head.split(": ", 1)
-            d.text((x, yy), actor + ":", font=f_b, fill=INK)
-            x += tw(d, actor + ":", f_b) + tw(d, " ", f_r)
-            tail = clip_to(d, tail, f_r, cx + colw - x)
+            d.text((x, yy), actor + ":", font=f_rb, fill=INK)
+            x += tw(d, actor + ":", f_rb) + tw(d, " ", f_rr)
+            tail = clip_to(d, tail, f_rr, cx + colw - x)
             if tail:
-                d.text((x, yy), tail, font=f_r, fill=INK)
+                d.text((x, yy), tail, font=f_rr, fill=INK)
         else:
-            d.text((x, yy), clip_to(d, head, f_r, cx + colw - x), font=f_r, fill=INK)
+            d.text((x, yy), clip_to(d, head, f_rr, cx + colw - x), font=f_rr, fill=INK)
+    y += percol * 12 + 5
 
-    # ---- closing line
-    d.line([M, y_close - 4, RIGHT, y_close - 4], fill=RULE, width=1)
-    check = ("Every story on this page happened, or was first reported, on Sunday 22 November 2026 "
-             "in some time zone.")
-    d.text((M, y_close + 4), check, font=font("arial.ttf", 10.5), fill=SOFT)
+    # ---- how to read it: the page states what it is sure of
+    d.line([M, y, RIGHT, y], fill=RULE, width=2)
+    y += 6
+    legend = [("REPORTED", "carried by the day's wires"),
+              ("CLAIM", "one side's account, labelled"),
+              ("FORECAST", "still to come when drawn")]
+    x = M
+    for word, gloss in legend:
+        f_g = font("arialbd.ttf", 8)
+        w = caps_width(d, word, f_g, 0.6)
+        d.rectangle([x, y, x + w + 8, y + f_g.size + 3], fill=SPINE)
+        caps(d, (x + 4, y + 1), word, f_g, WHITE, track=0.6)
+        x += w + 12
+        d.text((x, y + 1), gloss, font=font("arial.ttf", 8.5), fill=SOFT)
+        x += tw(d, gloss, font("arial.ttf", 8.5)) + 14
+    y += 15
+
+    # ---- footer
+    fy = H - M - 9
+    d.line([M, fy - 5, RIGHT, fy - 5], fill=RULE, width=1)
+    d.text((M, fy), "Every story here was reported on Sunday 22 November 2026, in some time zone.",
+           font=font("arial.ttf", 9), fill=SOFT)
     done = "ONE DAY, ONE PICTURE"
-    caps(d, (RIGHT - caps_width(d, done, f_src), y_close + 5), done, f_src, REGION["middle-east"][0])
+    caps(d, (RIGHT - caps_width(d, done, f_src), fy + 1), done, f_src, red)
+    if y > fy - 8:
+        print("WARNING: content overruns the footer by %d px" % (y - (fy - 8)))
 
     calm(img)
     lift(img)
     img.save(out_path, "PNG", optimize=True)
-    print("wrote %s (%d bytes) art_h=%d foot_y=%d" % (out_path, Path(out_path).stat().st_size, art_h, y_foot))
+    print("wrote %s (%d bytes)" % (out_path, Path(out_path).stat().st_size))
 
 
 # Two-line labels per card: the figure a reader should keep, then what it is.

@@ -110,6 +110,24 @@ def main():
         if sz < 8:
             problems.append("too small to read at 300px: %r is %dpt" % (s, sz))
 
+    # 6. every region the page counts must be named in its key. caps() sets
+    # letter-spaced text one character at a time, so the recorder never sees a
+    # whole label; the page records what it asked to set instead. This exists
+    # because a label wider than its segment used to be skipped in silence,
+    # leaving a colour in the key with no name under it.
+    for lab in {lab for _, lab in poster.REGION.values()}:
+        if lab not in poster.CAPS_DRAWN:
+            problems.append("region key never sets its label %r" % lab)
+
+    # 7. every lead and brief must be set: a story counted in the tally and
+    # then not drawn is a hole in the page.
+    heads = [s for _, s, _ in texts]
+    for n in poster.LEADS + poster.BRIEFS:
+        head = poster.by_n(n)[2]
+        if not any(head[:24].lower() in h.lower() or h.lower() in head.lower()
+                   for h in heads):
+            problems.append("story %d is not drawn: %r" % (n, head[:40]))
+
     print("%d strings measured, %d boxes" % (len(texts), len(bs)))
     if problems:
         for p in problems[:40]:
