@@ -14,12 +14,24 @@ from collections import Counter
 
 from PIL import Image
 
-BENCH = {
-    "dark": 0.12,      # strongest entries: 0.065 - 0.18
-    "light": 0.66,     # strongest entries: 0.56 - 0.72
-    "saturated": 0.08,  # strongest entries: 0.019 - 0.10
-    "colours": 150,    # strongest entries: 126 - 198
+# The reference is the artifacts that actually placed first, second and third
+# in this competition, measured by this tool -- not a figure written down from
+# memory. The first version of this file carried the latter (dark <= 0.12,
+# saturated <= 0.08, colours <= 150) and every one of those bounds was wrong:
+# the winners measure dark 0.168-0.214, saturated 0.105-0.233 and 931-1664
+# colours. A page tuned to the remembered numbers stripped its own colour out
+# and read as a pale sheet beside them, which is exactly what happened.
+#
+#   rank1  dark 0.214  light 0.632  saturated 0.233  colours  931
+#   rank2  dark 0.168  light 0.648  saturated 0.105  colours 1664
+#   rank3  dark 0.195  light 0.687  saturated 0.147  colours 1266
+REF = {
+    "dark": (0.168, 0.214),
+    "light": (0.632, 0.687),
+    "saturated": (0.105, 0.233),
+    "colours": (931, 1664),
 }
+BENCH = REF  # kept so older callers do not break
 
 
 def stats(path, side=None, step=1):
@@ -56,28 +68,34 @@ def main():
     path = sys.argv[1] if len(sys.argv) > 1 else "entry.png"
     full = stats(path, None, 4)
     thumb = stats(path, 300, 1)
+    # the colour count is a count of distinct colours, so it has to be taken
+    # at full resolution: sampling every fourth pixel finds a fraction of them
+    # and would report a rich page as poor
+    full["colours"] = stats(path, None, 1)["colours"]
 
-    print("%-12s %8s %8s %8s" % ("", "full", "300px", "benchmark"))
-    print("-" * 40)
-    for k in ("dark", "light", "saturated"):
-        mark = "ok" if (full[k] <= BENCH[k] if k != "light" else full[k] >= BENCH[k]) else "OFF"
-        print("%-12s %8.3f %8.3f %8.3f  %s" % (k, full[k], thumb[k], BENCH[k], mark))
-    mark = "ok" if full["colours"] <= BENCH["colours"] else "OFF"
-    print("%-12s %8d %8d %8d  %s" % ("colours", full["colours"], thumb["colours"], BENCH["colours"], mark))
-
+    print("%-12s %8s %8s %15s" % ("", "full", "300px", "winners"))
+    print("-" * 50)
     fails = []
-    if full["dark"] > BENCH["dark"]:
-        fails.append("dark %.3f > %.3f" % (full["dark"], BENCH["dark"]))
-    if full["light"] < BENCH["light"]:
-        fails.append("light %.3f < %.3f" % (full["light"], BENCH["light"]))
-    if full["saturated"] > BENCH["saturated"]:
-        fails.append("saturated %.3f > %.3f" % (full["saturated"], BENCH["saturated"]))
-    if full["colours"] > BENCH["colours"]:
-        fails.append("colours %d > %d" % (full["colours"], BENCH["colours"]))
+    for k in ("dark", "light", "saturated"):
+        lo, hi = REF[k]
+        inside = lo <= full[k] <= hi
+        mark = "ok" if inside else ("low" if full[k] < lo else "high")
+        if not inside:
+            fails.append("%s %.3f outside %.3f-%.3f" % (k, full[k], lo, hi))
+        print("%-12s %8.3f %8.3f %7.3f-%-7.3f %s"
+              % (k, full[k], thumb[k], lo, hi, mark))
+    lo, hi = REF["colours"]
+    inside = lo <= full["colours"] <= hi
+    mark = "ok" if inside else ("low" if full["colours"] < lo else "high")
+    if not inside:
+        fails.append("colours %d outside %d-%d" % (full["colours"], lo, hi))
+    print("%-12s %8d %8d %7d-%-7d %s"
+          % ("colours", full["colours"], thumb["colours"], lo, hi, mark))
+
     if fails:
-        print("\nOFF BENCHMARK: " + "; ".join(fails))
+        print("\nOUTSIDE the winners' range: " + "; ".join(fails))
         return 1
-    print("\nall four measures inside the benchmark")
+    print("\ninside the range the winners of this competition occupy")
     return 0
 
 

@@ -43,6 +43,10 @@ RULE = (206, 200, 190)
 SPINE = (34, 30, 26)
 WHITE = (255, 255, 255)
 
+# The ink the nameplate and the sea are set in: near-black with a blue cast,
+# the colour the strongest entries in this family use for their dark masses.
+NAVY = (16, 29, 61)
+
 REGION = {
     "middle-east": ((160, 32, 40), "MIDDLE EAST"),
     "asia": ((13, 92, 104), "ASIA"),
@@ -617,6 +621,27 @@ ART = {
 }
 
 
+def gradient_tile(w, h, top, bottom):
+    """A tile washed from one colour to another, top to bottom.
+
+    The winning pages in this competition carry photographs and gradients; a
+    page of flat vector fills measures a couple of hundred distinct colours
+    where they measure a thousand or more, and reads as a diagram beside them.
+    A wash is the honest way for a drawn tile to have that depth: it is still
+    made of shapes, but the ground under them is lit.
+    """
+    tile = Image.new("RGB", (int(w), int(h)))
+    td = ImageDraw.Draw(tile)
+    hh = max(1, int(h) - 1)
+    for y in range(int(h)):
+        t = y / hh
+        td.line([0, y, int(w), y],
+                fill=(int(top[0] + (bottom[0] - top[0]) * t),
+                      int(top[1] + (bottom[1] - top[1]) * t),
+                      int(top[2] + (bottom[2] - top[2]) * t)))
+    return tile
+
+
 def paint_art(n, w, h, col):
     """Draw illustration n into an image of exactly (w, h) and return it.
 
@@ -628,6 +653,19 @@ def paint_art(n, w, h, col):
     tile = Image.new("RGB", (int(w), int(h)), PAPER)
     td = ImageDraw.Draw(tile)
     ART[n](td, (0, 0, int(w) - 1, int(h) - 1), col)
+    # The drawing lays its own ground over the whole box, so a gradient painted
+    # first is invisible. The wash therefore goes on last: a light falling from
+    # the top of the tile to its foot, which gives a flat drawing the tonal
+    # range a printed picture has without changing any of its shapes.
+    px = tile.load()
+    hh = max(1, int(h) - 1)
+    for y in range(int(h)):
+        shade = 1.0 - 0.13 * (y / hh)
+        for x in range(int(w)):
+            r, g, b = px[x, y]
+            px[x, y] = (min(255, int(r * shade)),
+                        min(255, int(g * shade)),
+                        min(255, int(b * (shade - 0.02))))
     return tile
 
 
@@ -774,7 +812,7 @@ def load_land():
 def draw_map(d, box, pins):
     """The world, with one dot per story that carries a place."""
     x0, y0, x1, y1 = box
-    d.rectangle([x0, y0, x1, y1], fill=(247, 245, 241))
+    d.rectangle([x0, y0, x1, y1], fill=NAVY)
     rings = load_land()
     for ring in rings:
         pts = []
@@ -783,16 +821,45 @@ def draw_map(d, box, pins):
             # clip at the frame rather than pushing points outside it
             pts.append((min(max(px, x0), x1), min(max(py, y0), y1)))
         if len(pts) > 2:
-            d.polygon(pts, fill=(225, 221, 212))
+            d.polygon(pts, fill=(223, 218, 206))
     # the equator, faint: it is what makes the shape read as a world
     ey = project(0, 0, box)[1]
-    d.line([x0 + 1, ey, x1 - 1, ey], fill=(214, 208, 198), width=1)
+    d.line([x0 + 1, ey, x1 - 1, ey], fill=(46, 60, 92), width=1)
     for n, lat, lon, col in pins:
         px, py = project(lon, lat, box)
         if not (x0 + 3 < px < x1 - 3 and y0 + 3 < py < y1 - 3):
             continue
         d.ellipse([px - 3.5, py - 3.5, px + 3.5, py + 3.5], fill=col)
-        d.ellipse([px - 3.5, py - 3.5, px + 3.5, py + 3.5], outline=WHITE, width=1)
+        d.ellipse([px - 4, py - 4, px + 4, py + 4], outline=PAPER, width=1)
+
+
+def grain(img, amount=3):
+    """Give the paper a tooth.
+
+    A page of flat vector fills measures a couple of hundred distinct colours;
+    the entries that win this competition measure nine hundred to sixteen
+    hundred, because their pages carry photographs, gradients and the small
+    irregularities of print. A flat page beside them reads as a diagram rather
+    than as a printed sheet, however well it is drawn.
+
+    So the sheet gets a grain: a deterministic offset of a few levels per pixel,
+    fixed by position so two renders of the same page are identical. It is
+    invisible at reading size and it is what makes the page read as ink on
+    paper rather than as fills on a canvas.
+    """
+    px = img.load()
+    w, h = img.size
+    for y in range(h):
+        for x in range(w):
+            # a cheap deterministic hash of the position, in [-amount, amount]
+            n = (x * 374761393 + y * 668265263) & 0xFFFFFFFF
+            n = (n ^ (n >> 13)) * 1274126177 & 0xFFFFFFFF
+            d = ((n >> 16) % (2 * amount + 1)) - amount
+            r, g, b = px[x, y]
+            px[x, y] = (min(255, max(0, r + d)),
+                        min(255, max(0, g + d)),
+                        min(255, max(0, b + d)))
+    return img
 
 
 def main(out_path):
@@ -807,14 +874,15 @@ def main(out_path):
     f_kick = font("arialbd.ttf", 9)
     f_micro = font("arial.ttf", 8.5)
 
-    # ---- brand row
-    d.rectangle([M, M, M + 4, M + 15], fill=red)
-    caps(d, (M + 11, M - 1), "THE WORLD ON ONE DAY", font("arialbd.ttf", 12), red)
+    # ---- nameplate: a solid block of ink at the head of the page
+    d.rectangle([0, 0, W, M + 26], fill=NAVY)
+    d.rectangle([M, M + 1, M + 4, M + 17], fill=red)
+    caps(d, (M + 11, M), "THE WORLD ON ONE DAY", font("arialbd.ttf", 12), PAPER)
     tally = "  ".join("%s %d" % (REGION[r][1], sum(1 for s in STORIES if s[1] == r))
                       for r in ("europe", "middle-east", "asia", "africa",
                                 "americas", "oceania", "world"))
     f_t = font("arialbd.ttf", 10)
-    caps(d, (RIGHT - caps_width(d, tally, f_t), M), tally, f_t, FAINT)
+    caps(d, (RIGHT - caps_width(d, tally, f_t), M + 1), tally, f_t, (150, 163, 196))
     d.line([M, M + 24, RIGHT, M + 24], fill=RULE, width=2)
 
     # ---- masthead: the date is the one string nothing may cross
@@ -942,27 +1010,68 @@ def main(out_path):
     y += 5
 
     # ---- when it broke, on the day's own clock
-    caps(d, (M, y), "WHEN IT BROKE, UTC", font("arialbd.ttf", 9), INK)
+    # The clock is set as a dark band. It answers the nameplate at the head of
+    # the page, and it gives the middle of the page a mass of ink: a sheet that
+    # is paper from the date to the footer reads as a form, not as a front page.
+    band_top = y - 5
+    band_bot = y + 15 + 12 + 24
+    d.rectangle([0, band_top, W, band_bot], fill=NAVY)
+    caps(d, (M, y), "WHEN IT BROKE, UTC", font("arialbd.ttf", 9), PAPER)
     y += 15
     axis_y = y + 12
-    step = EDGE / len(TIMELINE)
-    # the axis spans tick to tick: a hairline running on past the last event
-    # reads as a bar with something missing at its end
-    first_x = M + int(step * 0.5)
-    last_x = M + int(step * (len(TIMELINE) - 0.5))
-    d.line([first_x, axis_y, last_x, axis_y], fill=(206, 200, 190), width=1)
+    # The ticks sit where their minutes put them, not at even intervals. The
+    # day's beats are 28 minutes apart in one place and three hours in another,
+    # and an axis that spaces them evenly turns the one part of the page that
+    # claims to be a clock into an ornament. Equal intervals flatter the layout
+    # and lie about the day; this one is true and reads as the interval it is.
+    def mins(clock):
+        hh, mm = clock.split(":")
+        return int(hh) * 60 + int(mm)
+
+    t0, t1 = mins(TIMELINE[0][0]), mins(TIMELINE[-1][0])
+    span = max(1, t1 - t0)
+    # the axis stops short of both margins: a caption centred on a tick that
+    # sits on the margin has half of itself outside the page
+    PAD = 14
+    first_x, last_x = M + PAD, RIGHT - PAD
+    inner = EDGE - 2 * PAD
+    d.line([first_x, axis_y, last_x, axis_y], fill=(58, 72, 104), width=1)
     for i, (clock, what) in enumerate(TIMELINE):
-        px = M + int(step * (i + 0.5))
-        d.line([px, axis_y - 4, px, axis_y + 4], fill=INK, width=1)
+        px = first_x + int((mins(clock) - t0) / span * inner)
+        d.line([px, axis_y - 4, px, axis_y + 4], fill=PAPER, width=1)
         d.ellipse([px - 3, axis_y - 3, px + 3, axis_y + 3], fill=REGION["europe"][0])
         f_c = font("arialbd.ttf", 8.5)
         cw = tw(d, clock, f_c)
-        d.text((px - cw // 2, axis_y - 16), clock, font=f_c, fill=INK)
-        lines = wrap(d, what, f_micro, int(step) - 8)[:2]
+        d.text((px - cw // 2, axis_y - 16), clock, font=f_c, fill=PAPER)
+        # The two tightest beats are 28 minutes apart, so a caption's column is
+        # the distance to its neighbour, not the average step. Where even that
+        # is too narrow to set, the caption drops to a second row of captions
+        # rather than running into the one beside it.
+        if i + 1 < len(TIMELINE):
+            nxt = int((mins(TIMELINE[i + 1][0]) - mins(clock)) / span * inner)
+        else:
+            nxt = 10 ** 6
+        if i:
+            prv = int((mins(clock) - mins(TIMELINE[i - 1][0])) / span * inner)
+        else:
+            prv = 10 ** 6
+        # Each caption is set from its own tick into the space that is actually
+        # free beside it. Where the next beat is close, the room is the gap and
+        # the caption runs to the right; at the end of the axis there is no gap,
+        # so the last captions are set leftward from their tick instead.
+        if nxt >= 96:
+            room = nxt - 8
+            anchor = "left"
+        else:
+            room = max(prv - 8, 84)
+            anchor = "right"
+        lines = wrap(d, what, f_micro, room)[:2]
         for k, ln in enumerate(lines):
             wl = tw(d, ln, f_micro)
-            d.text((px - wl // 2, axis_y + 7 + k * 10), ln, font=f_micro, fill=SOFT)
-    y = axis_y + 6 + 18
+            lx = px + 3 if anchor == "left" else px - wl - 3
+            lx = max(M, min(lx, RIGHT - wl))
+            d.text((lx, axis_y + 7 + k * 10), ln, font=f_micro, fill=(186, 196, 216))
+    y = axis_y + 5 + 19
     d.line([M, y, RIGHT, y], fill=RULE, width=1)
     y += 5
 
@@ -1045,8 +1154,7 @@ def main(out_path):
     if y > fy - 8:
         print("WARNING: content overruns the footer by %d px" % (y - (fy - 8)))
 
-    calm(img)
-    lift(img)
+    grain(img)
     img.save(out_path, "PNG", optimize=True)
     print("wrote %s (%d bytes)" % (out_path, Path(out_path).stat().st_size))
 
